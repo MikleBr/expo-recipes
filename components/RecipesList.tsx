@@ -1,5 +1,13 @@
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import TouchableScale from "react-native-touchable-scale";
+import { RootStackParamList } from "../@types/routes";
 
 type RecipesItem = {
   id: number;
@@ -38,20 +46,35 @@ export function RecipesList() {
       .finally(() => setLoading(false));
   }, []);
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList
-      data={data}
-      renderItem={({ item }) => <Row recipes={item} />}
-      keyExtractor={(item, index) => String(index)}
-    />
+    <View style={styles.container}>
+      {data.map((group) => (
+        <Row recipes={group} />
+      ))}
+    </View>
   );
 }
 
 type CardProps = { recipe: RecipesItem };
 
 const Card = ({ recipe }: CardProps) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   return (
-    <View style={cardStyles.card}>
+    <TouchableScale
+      activeScale={0.95}
+      defaultScale={1}
+      style={cardStyles.card}
+      onPress={() => navigation.navigate("recipe", { recipeId: String(recipe.id) })}
+    >
       <Image
         style={cardStyles.image}
         source={{
@@ -59,7 +82,7 @@ const Card = ({ recipe }: CardProps) => {
         }}
       />
       <Text style={cardStyles.title}>{recipe.name}</Text>
-    </View>
+    </TouchableScale>
   );
 };
 
@@ -77,7 +100,7 @@ const cardStyles = StyleSheet.create({
   title: {
     marginTop: 10,
     fontSize: 14,
-    fontWeight: '500'
+    fontWeight: "500",
   },
 });
 
